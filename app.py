@@ -321,7 +321,8 @@ def run_classification():
     from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
     try:
         from xgboost import XGBClassifier
-        xgb = XGBClassifier(n_estimators=80, max_depth=5, learning_rate=0.1,
+        xgb = XGBClassifier(n_estimators=200, max_depth=4, learning_rate=0.1,
+                             subsample=0.8, colsample_bytree=0.8,
                              random_state=42, eval_metric="mlogloss", verbosity=0, n_jobs=-1)
         has_xgb = True
     except ImportError:
@@ -332,13 +333,13 @@ def run_classification():
     sc = StandardScaler()
     Xtr_s, Xte_s = sc.fit_transform(Xtr), sc.transform(Xte)
     models = {
-        "Logistic Regression": LogisticRegression(max_iter=300, class_weight="balanced", random_state=42),
-        "Decision Tree":       DecisionTreeClassifier(max_depth=5, class_weight="balanced", random_state=42),
-        "Random Forest":       RandomForestClassifier(n_estimators=50, class_weight="balanced", random_state=42, n_jobs=-1),
-        "Gradient Boosting":   GradientBoostingClassifier(n_estimators=50, random_state=42),
-        "AdaBoost":            AdaBoostClassifier(n_estimators=50, random_state=42),
-        "SVM":                 SVC(kernel="rbf", probability=True, class_weight="balanced", random_state=42),
-        "KNN":                 KNeighborsClassifier(n_neighbors=7),
+        "Logistic Regression": LogisticRegression(max_iter=1000, C=0.5, class_weight="balanced", solver="lbfgs", random_state=42),
+        "Decision Tree":       DecisionTreeClassifier(max_depth=8, min_samples_split=10, min_samples_leaf=5, class_weight="balanced", random_state=42),
+        "Random Forest":       RandomForestClassifier(n_estimators=200, max_depth=10, min_samples_leaf=4, class_weight="balanced", random_state=42, n_jobs=-1),
+        "Gradient Boosting":   GradientBoostingClassifier(n_estimators=200, max_depth=4, learning_rate=0.1, subsample=0.8, min_samples_leaf=10, random_state=42),
+        "AdaBoost":            AdaBoostClassifier(n_estimators=150, learning_rate=0.5, random_state=42),
+        "SVM":                 SVC(kernel="rbf", C=1.0, gamma="scale", probability=True, class_weight="balanced", random_state=42),
+        "KNN":                 KNeighborsClassifier(n_neighbors=9, weights="distance"),
         "Naive Bayes":         GaussianNB(),
     }
     if has_xgb:
